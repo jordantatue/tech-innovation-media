@@ -1,32 +1,45 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Tech Innovation Digest</title>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
 
 <header>
   <h1>Tech Innovation Digest</h1>
+  <p>Veille automatique sur l’innovation technologique</p>
   <a href="subscribe.html">📩 S’abonner à la newsletter</a>
 </header>
 
 <main id="articles-list">
-  Chargement…
+  Chargement des articles…
 </main>
 
 <script>
 fetch("assets/js/articles.json")
   .then(r => r.json())
   .then(articles => {
-    document.getElementById("articles-list").innerHTML =
-      articles.map(a => `
-        <article>
-          <h2>${a.title}</h2>
-          <a href="article.html?file=${a.file}">Lire l’article</a>
-        </article>
-      `).join("");
+    const container = document.getElementById("articles-list");
+
+    if (!articles.length) {
+      container.innerHTML = "<p>Aucun article pour le moment.</p>";
+      return;
+    }
+
+    container.innerHTML = articles.map(a => `
+      <article class="article-card">
+        <h2>${a.title}</h2>
+        <small>${a.date}</small>
+        <br>
+        <a href="article.html?file=${a.file}">Lire l’article →</a>
+      </article>
+    `).join("");
+  })
+  .catch(() => {
+    document.getElementById("articles-list").innerText =
+      "Erreur de chargement des articles.";
   });
 </script>
 
