@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tech Innovation Digest</title>
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
 
@@ -18,28 +18,58 @@
 </main>
 
 <script>
+const container = document.getElementById("articles-list");
+
+const slugFromTitle = (article) => {
+  if (article.file) return article.file;
+  if (!article.title || !article.date) return "";
+
+  const slug = article.title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `${article.date}-${slug}.md`;
+};
+
+const formatDate = (value) => {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value || "Date inconnue";
+  return parsed.toLocaleDateString("fr-FR");
+};
+
 fetch("assets/js/articles.json")
-  .then(r => r.json())
-  .then(articles => {
-    const container = document.getElementById("articles-list");
+  .then((r) => r.json())
+  .then((data) => {
+    const articles = Array.isArray(data) ? data : (data && data.articles) || [];
 
     if (!articles.length) {
       container.innerHTML = "<p>Aucun article pour le moment.</p>";
       return;
     }
 
-    container.innerHTML = articles.map(a => `
-      <article class="article-card">
-        <h2>${a.title}</h2>
-        <small>${a.date}</small>
-        <br>
-        <a href="article.html?file=${a.file}">Lire l’article →</a>
-      </article>
-    `).join("");
+    container.innerHTML = articles
+      .map((article) => {
+        const file = slugFromTitle(article);
+        const link = file
+          ? `<a href="article.html?file=${encodeURIComponent(file)}">Lire l’article →</a>`
+          : "<em>Article non disponible</em>";
+
+        return `
+          <article class="article-card">
+            <h2>${article.title || "Article"}</h2>
+            <small>${formatDate(article.date)}</small>
+            <br>
+            ${link}
+          </article>
+        `;
+      })
+      .join("");
   })
   .catch(() => {
-    document.getElementById("articles-list").innerText =
-      "Erreur de chargement des articles.";
+    container.innerText = "Erreur de chargement des articles.";
   });
 </script>
 

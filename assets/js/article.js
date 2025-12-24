@@ -1,7 +1,6 @@
 async function loadArticle() {
   const params = new URLSearchParams(window.location.search);
   const file = params.get("file");
-
   const container = document.getElementById("article-content");
 
   if (!file) {
@@ -13,14 +12,13 @@ async function loadArticle() {
     const res = await fetch(`content/posts/${file}`);
     const md = await res.text();
 
-    const html = md
-      .replace(/^# (.*$)/gim, "<h1>$1</h1>")
-      .replace(/^## (.*$)/gim, "<h2>$1</h2>")
-      .replace(/^### (.*$)/gim, "<h3>$1</h3>")
-      .replace(/\n/g, "<br>");
+    // Supprimer le front-matter YAML si présent
+    const cleanMd = md.replace(/^---[\s\S]*?---/, "").trim();
 
-    container.innerHTML = html;
-  } catch {
+    // Markdown → HTML
+    container.innerHTML = marked.parse(cleanMd);
+
+  } catch (e) {
     container.innerText = "Erreur de chargement de l’article.";
   }
 }
